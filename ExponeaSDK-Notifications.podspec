@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "ExponeaSDK-Notifications"
-  s.version      = "2.17.0"
+  s.version      = "2.17.1"
   s.summary      = "A completementary extension-safe framework for supporting rich push notifications in Exponea SDK."
 
   # This description is used to generate tags and improve search results.
@@ -67,7 +67,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/exponea/exponea-ios-sdk.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/TFG-Labs/exponea-ios-sdk.git", :tag => "#{s.version}" }
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
