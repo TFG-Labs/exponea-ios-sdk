@@ -49,12 +49,20 @@ final class UrlOpener: UrlOpenerType {
         let userActivity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
         userActivity.webpageURL = url
 
+        
+        guard let applicationDelegate = application.delegate else {
+            Exponea.logger.log(.error, message: "application delegate was null, please review appdelegate setup")
+            return false
+        }
+        
         // Try and open the link as universal link
-        return application.delegate?.application?(
+        let applicationResult = applicationDelegate.application(
             application,
             continue: userActivity,
             restorationHandler: { _ in }
-        ) ?? false
+        )
+        Exponea.logger.log(.verbose, message: "Universal Link Response: \(String(describing: applicationResult))")
+        return applicationResult
     }
 
     private func openURLSchemeDeeplink(_ url: URL, application: UIApplication) {
