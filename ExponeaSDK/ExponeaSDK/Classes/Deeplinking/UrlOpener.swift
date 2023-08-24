@@ -56,11 +56,16 @@ final class UrlOpener: UrlOpenerType {
         }
         
         // Try and open the link as universal link
-        let applicationResult = applicationDelegate.application(
+        let applicationResult = applicationDelegate.application?(
             application,
             continue: userActivity,
             restorationHandler: { _ in }
         )
+        guard let applicationResult = applicationResult else {
+            Exponea.logger.log(.error, message: "application delegate response was null, please review appdelegate setup")
+            return false
+        }
+        
         Exponea.logger.log(.verbose, message: "Universal Link Response: \(String(describing: applicationResult))")
         return applicationResult
     }
