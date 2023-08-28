@@ -23,7 +23,9 @@ final class UrlOpener: UrlOpenerType {
             Exponea.logger.log(.warning, message: "Provided url \"\(urlString)\" is invalid")
             return
         }
-        if !openUniversalLink(url, application: UIApplication.shared) {
+        let value = openUniversalLink(url, application: UIApplication.shared);
+        Exponea.logger.log(.verbose, message: "\(Unmanaged.passUnretained(self).toOpaque()): Open Universal Link Response: \(String(describing: value))")
+        if value == false {
             openURLSchemeDeeplink(url, application: UIApplication.shared)
         }
     }
@@ -40,25 +42,20 @@ final class UrlOpener: UrlOpenerType {
         let userActivity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
         userActivity.webpageURL = url
 
-        
-        guard let applicationDelegate = application.delegate else {
-            Exponea.logger.log(.error, message: "application delegate was null, please review appdelegate setup")
-            return false
-        }
-        
         // Try and open the link as universal link
-        let applicationResult = applicationDelegate.application?(
-            application,
+        let applicationResult = application.delegate?.application?(
+            UIApplication.shared,
             continue: userActivity,
             restorationHandler: { _ in }
         )
-        guard let applicationResult = applicationResult else {
-            Exponea.logger.log(.error, message: "application delegate response was null, please review appdelegate setup")
-            return false
-        }
-        
-        Exponea.logger.log(.verbose, message: "Universal Link Response: \(String(describing: applicationResult))")
-        return applicationResult
+
+        // a guard actually breaks the logic
+//        if (applicationResult == nil) {
+//            Exponea.logger.log(.error, message: "\(Unmanaged.passUnretained(self).toOpaque()): application delegate response was null, please review appdelegate setup")
+//            return false
+//        }
+        Exponea.logger.log(.verbose, message: "\(Unmanaged.passUnretained(self).toOpaque()): Universal Link Response: \(String(describing: applicationResult))")
+        return applicationResult!
     }
 
     private func openURLSchemeDeeplink(_ url: URL, application: UIApplication) {
