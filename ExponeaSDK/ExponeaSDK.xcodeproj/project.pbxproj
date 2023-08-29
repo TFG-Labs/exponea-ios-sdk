@@ -858,7 +858,7 @@
 		C0ED33B621A6FB10003649C3 /* ExponeaSDKNotifications.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExponeaSDKNotifications.h; sourceTree = "<group>"; };
 		C0ED33B721A6FB10003649C3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0ED33C021A6FB6B003649C3 /* ExponeaNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExponeaNotificationService.swift; sourceTree = "<group>"; };
-		C0ED33C621A72EE6003649C3 /* ExponeaSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; name = ExponeaSDK.podspec; path = ../ExponeaSDK.podspec; sourceTree = "<group>"; };
+		C0ED33C621A72EE6003649C3 /* ExponeaSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; name = ExponeaSDK.podspec; path = ../ExponeaSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		C0F2406920BC38EC00CAF7CE /* Swizzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Swizzle.swift; sourceTree = "<group>"; };
 		C0F2406B20BC50A000CAF7CE /* ExponeaInternal+Fetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExponeaInternal+Fetching.swift"; sourceTree = "<group>"; };
 		C0F2406D20BC511500CAF7CE /* ExponeaInternal+Tracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExponeaInternal+Tracking.swift"; sourceTree = "<group>"; };
