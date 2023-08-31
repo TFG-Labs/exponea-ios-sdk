@@ -25,9 +25,10 @@ final class UrlOpener: UrlOpenerType {
         }
         let value = openUniversalLink(url, application: UIApplication.shared);
         Exponea.logger.log(.verbose, message: "\(Unmanaged.passUnretained(self).toOpaque()): Open Universal Link Response: \(String(describing: value))")
-        if value == false {
-            openURLSchemeDeeplink(url, application: UIApplication.shared)
-        }
+        // NOTE: disabling this as we don't want the app to be affected
+        //        if value == false {
+//            openURLSchemeDeeplink(url, application: UIApplication.shared)
+//        }
     }
 
     private func openUniversalLink(_ url: URL, application: UIApplication) -> Bool {
@@ -41,6 +42,11 @@ final class UrlOpener: UrlOpenerType {
         // Simulate universal link user activity
         let userActivity = NSUserActivity(activityType: NSUserActivityTypeBrowsingWeb)
         userActivity.webpageURL = url
+        
+        if (application.delegate == nil) {
+            Exponea.logger.log(.error, message: "Appdelegate was nil, please double check app setup")
+            return false
+        }
 
         // Try and open the link as universal link
         let applicationResult = application.delegate?.application?(
@@ -48,13 +54,7 @@ final class UrlOpener: UrlOpenerType {
             continue: userActivity,
             restorationHandler: { _ in }
         )
-
-        // a guard actually breaks the logic
-//        if (applicationResult == nil) {
-//            Exponea.logger.log(.error, message: "\(Unmanaged.passUnretained(self).toOpaque()): application delegate response was null, please review appdelegate setup")
-//            return false
-//        }
-        Exponea.logger.log(.verbose, message: "\(Unmanaged.passUnretained(self).toOpaque()): Universal Link Response: \(String(describing: applicationResult))")
+        Exponea.logger.log(.verbose, message: "Universal Link Response: \(String(describing: applicationResult))")
         return applicationResult!
     }
 
