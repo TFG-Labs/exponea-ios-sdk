@@ -69,5 +69,8 @@ struct MockData {
     ]
 
     // swiftlint:disable:next line_length
-    let campaignUrl = URL(string: "https://mockurl?param?utm_source=utm&utm_campaign=mycampaign&utm_content=utmcontent&utm_medium=utmmedium&utm_term=term&xnpe_cmp=cmp&itt=usertoken")
+    let campaignUrl = URL(safeString: "https://mockurl?param?utm_source=utm&utm_campaign=mycampaign&utm_content=utmcontent&utm_medium=utmmedium&utm_term=term&xnpe_cmp=cmp&itt=usertoken")
+
+    // swiftlint:disable:next line_length
+    let invalidCampaignUrl = URL(safeString: "https://mockurl?param?utm_source=utm&utm_campaign=mycampaign&utm_content=utmcontent&utm_medium=utmmedium&utm_term=term&itt=usertoken")
 }

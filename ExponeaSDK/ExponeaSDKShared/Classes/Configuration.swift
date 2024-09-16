@@ -50,6 +50,12 @@ public struct Configuration: Codable, Equatable {
     /// Advanced authorization provider instance
     public internal(set) var customAuthProvider: AuthorizationProviderType?
 
+    /// Is dark mode enabled
+    public internal(set) var isDarkModeEnabled: Bool?
+
+    ///  App inbox detail image inset
+    public internal(set) var appInboxDetailImageInset: CGFloat?
+
     enum CodingKeys: String, CodingKey {
         case projectMapping
         case projectToken
@@ -65,6 +71,8 @@ public struct Configuration: Codable, Equatable {
         case flushEventMaxRetries
         case allowDefaultCustomerProperties
         case advancedAuthEnabled
+        case isDarkModeEnabled
+        case appInboxDetailImageInset
     }
 
     /// Creates the configuration object with the provided properties.
@@ -84,7 +92,9 @@ public struct Configuration: Codable, Equatable {
                 defaultProperties: [String: JSONConvertible]? = nil,
                 inAppContentBlocksPlaceholders: [String]? = nil,
                 allowDefaultCustomerProperties: Bool? = nil,
-                advancedAuthEnabled: Bool? = nil
+                advancedAuthEnabled: Bool? = nil,
+                isDarkModeEnabled: Bool? = nil,
+                appInboxDetailImageInset: CGFloat? = 56
     ) throws {
         guard let projectToken = projectToken else {
             throw ExponeaError.configurationError("No project token provided.")
@@ -97,6 +107,7 @@ public struct Configuration: Codable, Equatable {
         self.allowDefaultCustomerProperties = allowDefaultCustomerProperties ?? true
         self.advancedAuthEnabled = advancedAuthEnabled ?? false
         self.inAppContentBlocksPlaceholders = inAppContentBlocksPlaceholders
+        self.appInboxDetailImageInset = appInboxDetailImageInset
         if let url = baseUrl {
             self.baseUrl = url
         }
@@ -104,6 +115,7 @@ public struct Configuration: Codable, Equatable {
             self.customAuthProvider = try loadCustomAuthProvider()
         }
         try self.validate()
+        self.isDarkModeEnabled = isDarkModeEnabled ?? false
     }
 
     public init(
@@ -121,7 +133,9 @@ public struct Configuration: Codable, Equatable {
         appGroup: String?,
         flushEventMaxRetries: Int,
         allowDefaultCustomerProperties: Bool?,
-        advancedAuthEnabled: Bool?
+        advancedAuthEnabled: Bool?,
+        isDarkModeEnabled: Bool? = nil,
+        appInboxDetailImageInset: CGFloat? = 56
     ) throws {
         self.projectToken = projectToken
         self.projectMapping = projectMapping
@@ -138,10 +152,12 @@ public struct Configuration: Codable, Equatable {
         self.flushEventMaxRetries = flushEventMaxRetries
         self.allowDefaultCustomerProperties = allowDefaultCustomerProperties ?? true
         self.advancedAuthEnabled = advancedAuthEnabled ?? false
+        self.appInboxDetailImageInset = appInboxDetailImageInset
         if (self.advancedAuthEnabled) {
             self.customAuthProvider = try loadCustomAuthProvider()
         }
         try self.validate()
+        self.isDarkModeEnabled = isDarkModeEnabled ?? false
     }
 
     /// Creates the Configuration object from a plist file.
@@ -239,6 +255,18 @@ public struct Configuration: Codable, Equatable {
         if let flushEventMaxRetries = try container.decodeIfPresent(
             Int.self, forKey: .flushEventMaxRetries) {
             self.flushEventMaxRetries = flushEventMaxRetries
+        }
+        
+        // isDarkModeEnabled
+        if let isDarkModeEnabled = try container.decodeIfPresent(
+            Bool.self, forKey: .isDarkModeEnabled) {
+            self.isDarkModeEnabled = isDarkModeEnabled
+        }
+        
+        // appInboxDetailImageInset
+        if let appInboxDetailImageInset = try container.decodeIfPresent(
+            CGFloat.self, forKey: .appInboxDetailImageInset) {
+            self.appInboxDetailImageInset = appInboxDetailImageInset
         }
 
         // App group

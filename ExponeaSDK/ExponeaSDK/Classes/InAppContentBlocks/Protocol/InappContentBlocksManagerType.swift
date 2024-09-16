@@ -19,10 +19,15 @@ public protocol InAppContentBlocksManagerType {
     func getUsedInAppContentBlocks(placeholder: String, indexPath: IndexPath) -> UsedInAppContentBlocks?
     func anonymize()
     func initBlocker()
-    func loadInAppContentBlocksPlaceholders(completion: EmptyBlock?)
+    func loadInAppContentBlockMessages(completion: EmptyBlock?)
+    func updateInteractedState(for messageId: String)
+    func updateDisplayedState(for messageId: String)
+    func getDisplayState(of messageId: String) -> InAppContentBlocksDisplayStatus
     // Test purposes
+    func hasHtmlImages(html: String) -> Bool
     func getFilteredMessage(message: InAppContentBlockResponse) -> Bool
     func prefetchPlaceholdersWithIds(input: [InAppContentBlockResponse], ids: [String]) -> [InAppContentBlockResponse]
     func filterPriority(input: [InAppContentBlockResponse]) -> [Int: [InAppContentBlockResponse]]
     func refreshStaticViewContent(staticQueueData: StaticQueueData)
+    func isMessageValid(message: InAppContentBlockResponse, isValidCompletion: TypeBlock<Bool>?, refreshCallback: EmptyBlock?) 
 }

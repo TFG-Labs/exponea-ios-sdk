@@ -74,16 +74,35 @@ final class InAppMessageDialogView: UIViewController, InAppMessageView {
     }
 
     func dismiss(isUserInteraction: Bool) {
+        dismissCallback(isUserInteraction)
         guard presentingViewController != nil else {
             return
         }
-        dismissCallback(isUserInteraction)
         dismiss(animated: true)
     }
 
     override func loadView() {
         view = UIView(frame: UIScreen.main.bounds)
         view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+    }
+
+    func convertToDarkIfNeeded() {
+        guard Exponea.shared.isDarkMode else { return }
+        if #available(iOS 13.0, *) {
+            titleTextView.textColor = .label
+            bodyTextView.textColor = .label
+            [
+                dialogContainerView,
+                dialogStackView,
+                contentsStackView,
+                titleTextView,
+                bodyTextView,
+                actionButtonsStackView,
+                backgroundView
+            ].forEach { view in
+                view.backgroundColor = .secondarySystemBackground
+            }
+        }
     }
 
     override func viewDidLoad() {
@@ -103,6 +122,7 @@ final class InAppMessageDialogView: UIViewController, InAppMessageView {
         gestureRecognizer.cancelsTouchesInView = false
         gestureRecognizer.delegate = self
         view.addGestureRecognizer(gestureRecognizer)
+        convertToDarkIfNeeded()
     }
 
     override func viewDidLayoutSubviews() {

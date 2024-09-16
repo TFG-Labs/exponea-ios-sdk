@@ -21,7 +21,7 @@ public struct InAppMessage: Codable, Equatable {
         }
         return InAppMessageType(rawValue: rawMessageType!) ?? .alert
     }
-    public let rawFrequency: String
+    public var rawFrequency: String
     public var frequency: InAppMessageFrequency? { return InAppMessageFrequency(rawValue: rawFrequency) }
     public let payload: InAppMessagePayload?
     public let payloadHtml: String?
@@ -177,6 +177,11 @@ public struct InAppMessageTrigger: Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case type
         case eventType = "event_type"
+    }
+    
+    public init(type: String?, eventType: String?) {
+        self.type = type
+        self.eventType = eventType
     }
 }
 

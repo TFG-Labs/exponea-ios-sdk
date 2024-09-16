@@ -20,9 +20,6 @@ protocol TrackingManagerType: AnyObject {
     /// Returns the push token of the current customer if there is any.
     var customerPushToken: String? { get }
 
-    /// The manager responsible for handling notification callbacks.
-    var notificationsManager: PushNotificationManagerType { get }
-
     /// Main function used to track events to Exponea.
     ///
     /// - Parameters:
@@ -32,8 +29,6 @@ protocol TrackingManagerType: AnyObject {
     func track(_ type: EventType, with data: [DataType]?) throws
 
     func processTrack(_ type: EventType, with data: [DataType]?, trackingAllowed: Bool) throws
-
-    func processTrack(_ type: EventType, with data: [DataType]?, trackingAllowed: Bool, for customerId: String?) throws
 
     // Function used to track in-app message banner shown event
     func trackInAppMessageShown(message: InAppMessage, trackingAllowed: Bool)
@@ -48,18 +43,32 @@ protocol TrackingManagerType: AnyObject {
     )
     
     // Function used to track inAppContentBlocks message banner click event
-    func trackInAppContentBlocksClick(
+    func trackInAppContentBlockClick(
+        placeholderId: String,
+        action: InAppContentBlockAction,
         message: InAppContentBlockResponse,
-        trackingAllowed: Bool,
-        buttonText: String?,
-        buttonLink: String?
+        trackingAllowed: Bool
     )
     
     // Function used to track in-app message banner close event
     func trackInAppMessageClose(message: InAppMessage, trackingAllowed: Bool, isUserInteraction: Bool)
     // Function used to track inAppContentBlocks message banner close event
-    func trackInAppContentBlocksClose(message: InAppContentBlockResponse, trackingAllowed: Bool)
-    func trackInAppContentBlocksShow(message: InAppContentBlockResponse, trackingAllowed: Bool)
+    func trackInAppContentBlockClose(
+        placeholderId: String,
+        message: InAppContentBlockResponse,
+        trackingAllowed: Bool
+    )
+    func trackInAppContentBlockShow(
+        placeholderId: String,
+        message: InAppContentBlockResponse,
+        trackingAllowed: Bool
+    )
+    func trackInAppContentBlockError(
+        placeholderId: String,
+        message: InAppContentBlockResponse,
+        errorMessage: String,
+        trackingAllowed: Bool
+    )
 
     // Function used to track in-app message banner error event
     func trackInAppMessageError(message: InAppMessage, error: String, trackingAllowed: Bool)
@@ -83,4 +92,7 @@ protocol TrackingManagerType: AnyObject {
     /// Anonymizes the user by deleting all identifiers (including cookie) and deletes all database data.
     /// You can switch project and new user will be tracked into it
     func anonymize(exponeaProject: ExponeaProject, projectMapping: [EventType: [ExponeaProject]]?) throws
+    
+    /// Tracks delivered push notification as EventTrackingObject
+    func trackDeliveredPushEvent(_ eventObject: EventTrackingObject)
 }

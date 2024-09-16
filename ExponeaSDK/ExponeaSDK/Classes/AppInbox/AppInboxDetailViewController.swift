@@ -77,13 +77,21 @@ open class AppInboxDetailViewController: UIViewController, WKUIDelegate {
         navigationController?.navigationBar.isHidden = false
         navigationController?.isNavigationBarHidden = false
         applyDataToView()
+        convertToDarkIfNeeded()
     }
 
     private func determineActionType(_ action: ActionInfo) -> MessageItemActionType {
-        if action.actionUrl.hasPrefix("http://") || action.actionUrl.hasPrefix("https://") {
+        switch action.actionType {
+        case .browser:
             return .browser
-        } else {
+        case .deeplink:
             return .deeplink
+        case .unknown:
+            if action.actionUrl.hasPrefix("http://") || action.actionUrl.hasPrefix("https://") {
+                return .browser
+            } else {
+                return .deeplink
+            }
         }
     }
 
@@ -195,8 +203,7 @@ open class AppInboxDetailViewController: UIViewController, WKUIDelegate {
             }
             let normalizeConf = HtmlNormalizerConfig(
                 makeResourcesOffline: true,
-                ensureCloseButton: false,
-                allowAnchorButton: true
+                ensureCloseButton: false
             )
             let normalizedPayload = HtmlNormalizer(selfWhileAsync.data?.content?.html ?? "").normalize(normalizeConf)
             guard
@@ -315,9 +322,20 @@ open class AppInboxDetailViewController: UIViewController, WKUIDelegate {
 
 // MARK: - Methods
 private extension AppInboxDetailViewController {
+    func convertToDarkIfNeeded() {
+        guard Exponea.shared.isDarkMode else { return }
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .systemBackground
+            messageImage.backgroundColor = .secondarySystemBackground
+            messageTitle.textColor = .label
+            message.textColor = .secondaryLabel
+            htmlContainer.backgroundColor = .systemBackground
+        }
+    }
+
     func setupElements() {
         view.backgroundColor = .white
-        messageImage.contentMode = .scaleAspectFill
+        messageImage.contentMode = .scaleAspectFit
         messageImage.backgroundColor = UIColor(
             red: CGFloat(245) / 255,
             green: CGFloat(245) / 255,
@@ -366,8 +384,9 @@ private extension AppInboxDetailViewController {
         pushContainer
             .padding()
         messageImage
-            .padding(.leading, .top, .trailing, constant: 0)
-            .frame(width: view.frame.size.width, height: view.frame.size.width)
+            .padding(.leading, .trailing, constant: 0)
+            .padding(.top, constant: Exponea.shared.configuration?.appInboxDetailImageInset ?? 0)
+            .frame(width: view.frame.size.width)
         receivedTime
             .padding(messageImage, .top, constant: 16)
             .padding(.leading, .trailing, constant: 16)

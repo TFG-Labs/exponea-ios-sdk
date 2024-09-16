@@ -65,16 +65,23 @@ class AppDelegate: ExponeaAppDelegate {
             let incomingURL = userActivity.webpageURL
             else { return false }
         Exponea.shared.trackCampaignClick(url: incomingURL, timestamp: nil)
+        if let type = DeeplinkType(input: incomingURL.absoluteString) {
+            DeeplinkManager.manager.setDeeplinkType(type: type)
+        }
         return incomingURL.host == "old.panaxeo.com"
     }
 
     func application(
-        _ app: UIApplication,
-        open url: URL,
-        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-    ) -> Bool {
+           _ app: UIApplication,
+           open url: URL,
+           options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+       ) -> Bool {
         if let components = URLComponents(url: url, resolvingAgainstBaseURL: false), components.scheme == "exponea" {
-            showAlert("Deeplink received", url.absoluteString)
+            if let type = DeeplinkType(input: url.absoluteString) {
+                DeeplinkManager.manager.setDeeplinkType(type: type)
+            } else {
+                onMain(self.showAlert("Deeplink received", url.absoluteString))
+            }
             return true
         }
         return false
@@ -123,10 +130,12 @@ extension AppDelegate: PushNotificationManagerDelegate {
             .verbose,
             message: "Silent push received, extraData \(String(describing: extraData))"
         )
-        showAlert(
-            "Silent push received",
-            "extraData \(String(describing: extraData))"
-        )
+        onMain {
+            self.showAlert(
+                "Silent push received",
+                "extraData \(String(describing: extraData))"
+            )
+        }
     }
 }
 
@@ -158,5 +167,16 @@ class InAppDelegate: InAppMessageActionDelegate {
         } else {
             Exponea.shared.trackInAppMessageClose(message: message, isUserInteraction: false)
         }
+    }
+
+    func inAppMessageShown(message: ExponeaSDK.InAppMessage) {
+        Exponea.logger.log(.verbose, message: "In app message \(message.name) has been shown")
+    }
+
+    func inAppMessageError(message: ExponeaSDK.InAppMessage?, errorMessage: String) {
+        Exponea.logger.log(
+            .verbose,
+            message: "Error occurred '\(errorMessage)' while showing in app message \(message?.name ?? "<no_name>")"
+        )
     }
 }

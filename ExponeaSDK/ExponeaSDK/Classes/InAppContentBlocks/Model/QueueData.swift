@@ -12,3 +12,20 @@ struct QueueData {
     let inAppContentBlocks: InAppContentBlockResponse
     let newValue: UsedInAppContentBlocks
 }
+
+struct QueueLoadData {
+    let placeholder: String
+    let indexPath: IndexPath
+    let expired: [InAppContentBlockResponse]
+}
+
+extension QueueData {
+    func describeDetailed() -> String {
+        return """
+        {
+            inAppContentBlocks: \(inAppContentBlocks.describe()),
+            newValue: \(newValue.describeDetailed())
+        }
+        """
+    }
+}

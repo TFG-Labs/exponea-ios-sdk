@@ -117,24 +117,32 @@ class TrackingConsentManager: TrackingConsentManagerType {
         self.trackingManager.trackInAppMessageClose(message: message, trackingAllowed: trackingAllowed, isUserInteraction: isUserInteraction)
     }
 
-    func trackInAppContentBlocksClose(message: InAppContentBlockResponse, mode: MODE, isUserInteraction: Bool?) {
+    func trackInAppContentBlockClose(placeholderId: String, message: InAppContentBlockResponse, mode: MODE) {
         var trackingAllowed = true
         if mode == .CONSIDER_CONSENT && message.personalizedMessage?.hasTrackingConsent == false {
             Exponea.logger.log(.error, message: "Event for closed inAppContentBlocks is not tracked because consent is not given")
             trackingAllowed = false
         }
-        self.trackingManager.trackInAppContentBlocksClose(message: message, trackingAllowed: trackingAllowed)
+        self.trackingManager.trackInAppContentBlockClose(
+            placeholderId: placeholderId,
+            message: message,
+            trackingAllowed: trackingAllowed
+        )
     }
-    
-    func trackInAppContentBlocksShow(message: InAppContentBlockResponse, mode: MODE) {
+
+    func trackInAppContentBlockShow(placeholderId: String, message: InAppContentBlockResponse, mode: MODE) {
         var trackingAllowed = true
         if mode == .CONSIDER_CONSENT && message.personalizedMessage?.hasTrackingConsent == false {
             Exponea.logger.log(.error, message: "Event for closed inAppContentBlocks is not tracked because consent is not given")
             trackingAllowed = false
         }
-        self.trackingManager.trackInAppContentBlocksShow(message: message, trackingAllowed: trackingAllowed)
+        self.trackingManager.trackInAppContentBlockShow(
+            placeholderId: placeholderId,
+            message: message,
+            trackingAllowed: trackingAllowed
+        )
     }
-    
+
     func trackInAppMessageError(message: InAppMessage, error: String, mode: MODE) {
         var trackingAllowed = true
         if mode == .CONSIDER_CONSENT && !message.hasTrackingConsent {
@@ -145,7 +153,7 @@ class TrackingConsentManager: TrackingConsentManagerType {
     }
 
     func trackAppInboxClick(message: MessageItem, buttonText: String?, buttonLink: String?, mode: MODE) {
-        guard let customerId = message.customerIds["cookie"] else {
+        guard !message.customerIds.isEmpty, let _ = message.customerIds["cookie"] else {
             Exponea.logger.log(.error, message: "AppInbox message has no customerId")
             return
         }
@@ -170,10 +178,10 @@ class TrackingConsentManager: TrackingConsentManagerType {
                 .appInbox,
                 with: [
                     .properties(eventData),
-                    .timestamp(Date().timeIntervalSince1970)
+                    .timestamp(Date().timeIntervalSince1970),
+                    .customerIds(message.customerIds)
                 ],
-                trackingAllowed: trackingAllowed,
-                for: customerId
+                trackingAllowed: trackingAllowed
             )
         } catch {
             Exponea.logger.log(.error, message: "Error tracking AppInbox clicked: \(error.localizedDescription)")
@@ -181,8 +189,8 @@ class TrackingConsentManager: TrackingConsentManagerType {
     }
 
     func trackAppInboxOpened(message: MessageItem, mode: MODE) {
-        guard let customerId = message.customerIds["cookie"] else {
-            Exponea.logger.log(.error, message: "AppInbox message contains no customerId")
+        guard !message.customerIds.isEmpty, let _ = message.customerIds["cookie"] else {
+            Exponea.logger.log(.error, message: "AppInbox message has no customerId")
             return
         }
         var trackingAllowed = true
@@ -201,22 +209,53 @@ class TrackingConsentManager: TrackingConsentManagerType {
                 .appInbox,
                 with: [
                     .properties(eventData),
-                    .timestamp(Date().timeIntervalSince1970)
+                    .timestamp(Date().timeIntervalSince1970),
+                    .customerIds(message.customerIds)
                 ],
-                trackingAllowed: trackingAllowed,
-                for: customerId
+                trackingAllowed: trackingAllowed
             )
         } catch {
             Exponea.logger.log(.error, message: "Error tracking AppInbox opened: \(error.localizedDescription)")
         }
     }
-    
-    func trackInAppContentBlocksClick(message: InAppContentBlockResponse, buttonText: String?, buttonLink: String?, mode: MODE) {
+
+    func trackInAppContentBlockClick(
+        placeholderId: String,
+        message: InAppContentBlockResponse,
+        action: InAppContentBlockAction,
+        mode: MODE
+    ) {
         var trackingAllowed = true
-        if mode == .CONSIDER_CONSENT && message.personalizedMessage?.hasTrackingConsent == false && !GdprTracking.isTrackForced(buttonLink) {
+        if mode == .CONSIDER_CONSENT
+               && message.personalizedMessage?.hasTrackingConsent == false
+               && !GdprTracking.isTrackForced(action.url) {
             Exponea.logger.log(.error, message: "Event for clicked inAppContentBlocks message is not tracked because consent is not given")
             trackingAllowed = false
         }
-        self.trackingManager.trackInAppContentBlocksClick(message: message, trackingAllowed: trackingAllowed, buttonText: buttonText, buttonLink: buttonLink)
+        self.trackingManager.trackInAppContentBlockClick(
+            placeholderId: placeholderId,
+            action: action,
+            message: message,
+            trackingAllowed: trackingAllowed
+        )
+    }
+
+    func trackInAppContentBlockError(
+        placeholderId: String,
+        message: InAppContentBlockResponse,
+        errorMessage: String,
+        mode: MODE
+    ) {
+        var trackingAllowed = true
+        if mode == .CONSIDER_CONSENT && message.personalizedMessage?.hasTrackingConsent == false {
+            Exponea.logger.log(.error, message: "Event for error inAppContentBlocks is not tracked because consent is not given")
+            trackingAllowed = false
+        }
+        self.trackingManager.trackInAppContentBlockError(
+            placeholderId: placeholderId,
+            message: message,
+            errorMessage: errorMessage,
+            trackingAllowed: trackingAllowed
+        )
     }
 }
