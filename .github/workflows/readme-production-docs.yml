@@ -10,13 +10,13 @@ on:
       - main
 
 jobs:
-  rdme-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repo 📚
-        uses: actions/checkout@v3
+  # rdme-docs:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out repo 📚
+  #       uses: actions/checkout@v3
 
-      - name: Run `docs` command 🚀
-        uses: readmeio/rdme@v8
-        with:
-          rdme: docs Documentation --key=${{ secrets.README_PRODUCTION_API_KEY }} --version=2
+  #     - name: Run `docs` command 🚀
+  #       uses: readmeio/rdme@v8
+  #       with:
+  #         rdme: docs Documentation --key=${{ secrets.README_PRODUCTION_API_KEY }} --version=2
