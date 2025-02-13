@@ -74,13 +74,14 @@ public class ExponeaInternal: ExponeaType {
 
     /// Repository responsible for fetching or uploading data to the API.
     internal var repository: RepositoryType?
-    
+
     /// The manager for push registration and delivery tracking
     internal var notificationsManager: PushNotificationManagerType?
 
     internal var telemetryManager: TelemetryManager?
     public var inAppContentBlocksManager: InAppContentBlocksManagerType?
     public var segmentationManager: SegmentationManagerType?
+    public var manualSegmentationManager: ManualSegmentationManagerType?
 
     /// Custom user defaults to track basic information
     internal var userDefaults: UserDefaults = {
@@ -214,7 +215,7 @@ public class ExponeaInternal: ExponeaType {
         queue.maxConcurrentOperationCount = 1
         return queue
     }()
-    
+
     internal lazy var inAppContentBlockStatusStore: InAppContentBlockDisplayStatusStore = {
         return InAppContentBlockDisplayStatusStore(userDefaults: userDefaults)
     }()
@@ -250,6 +251,7 @@ public class ExponeaInternal: ExponeaType {
         let exception = objc_tryCatch {
             do {
                 self.segmentationManager = SegmentationManager.shared
+                self.manualSegmentationManager = ManualSegmentationManager.shared
 
                 let database = try DatabaseManager()
                 if !Exponea.isBeingTested {
@@ -273,10 +275,9 @@ public class ExponeaInternal: ExponeaType {
                     repository: repository,
                     customerIdentifiedHandler: { [weak self] in
                         // reload in-app messages once customer identification is flushed - user may have been merged
-                        guard let trackingManager = self?.trackingManager,
-                                                let inAppContentBlocksManager = self?.inAppContentBlocksManager else { return }
-                        if let placeholders = configuration.inAppContentBlocksPlaceholders {
-                            inAppContentBlocksManager.loadInAppContentBlockMessages {
+                        guard let inAppContentBlocksManager = self?.inAppContentBlocksManager else { return }
+                        inAppContentBlocksManager.loadInAppContentBlockMessages {
+                            if let placeholders = configuration.inAppContentBlocksPlaceholders {
                                 inAppContentBlocksManager.prefetchPlaceholdersWithIds(ids: placeholders)
                             }
                         }
@@ -537,7 +538,8 @@ public extension ExponeaInternal {
                    defaultProperties: [String: JSONConvertible]? = nil,
                    inAppContentBlocksPlaceholders: [String]? = nil,
                    allowDefaultCustomerProperties: Bool? = nil,
-                   advancedAuthEnabled: Bool? = nil
+                   advancedAuthEnabled: Bool? = nil,
+                   manualSessionAutoClose: Bool = true
     ) {
         do {
             let configuration = try Configuration(
@@ -548,7 +550,8 @@ public extension ExponeaInternal {
                 defaultProperties: defaultProperties,
                 inAppContentBlocksPlaceholders: inAppContentBlocksPlaceholders,
                 allowDefaultCustomerProperties: allowDefaultCustomerProperties ?? true,
-                advancedAuthEnabled: advancedAuthEnabled
+                advancedAuthEnabled: advancedAuthEnabled,
+                manualSessionAutoClose: manualSessionAutoClose
             )
             self.configuration = configuration
             self.afterInit.setStatus(status: .configured)
@@ -618,7 +621,8 @@ public extension ExponeaInternal {
                    defaultProperties: [String: JSONConvertible]? = nil,
                    inAppContentBlocksPlaceholders: [String]? = nil,
                    allowDefaultCustomerProperties: Bool? = nil,
-                   advancedAuthEnabled: Bool? = nil
+                   advancedAuthEnabled: Bool? = nil,
+                   manualSessionAutoClose: Bool = true
     ) {
         do {
             let configuration = try Configuration(
@@ -630,7 +634,8 @@ public extension ExponeaInternal {
                 defaultProperties: defaultProperties,
                 inAppContentBlocksPlaceholders: inAppContentBlocksPlaceholders,
                 allowDefaultCustomerProperties: allowDefaultCustomerProperties ?? true,
-                advancedAuthEnabled: advancedAuthEnabled
+                advancedAuthEnabled: advancedAuthEnabled,
+                manualSessionAutoClose: manualSessionAutoClose
             )
             self.configuration = configuration
             self.afterInit.setStatus(status: .configured)
@@ -654,16 +659,9 @@ public extension ExponeaInternal {
         }
     }
 
-    func getSegments(category: SegmentCategory, successCallback: @escaping TypeBlock<[SegmentDTO]>) {
-        var callback: SegmentCallbackData?
-        callback = .init(category: category, isIncludeFirstLoad: true) { data in
-            successCallback(data)
-            if let callback {
-                self.segmentationManager?.removeCallback(callbackData: callback)
-            }
-        }
-        if let callback {
-            segmentationManager?.addCallback(callbackData: callback)
+    func getSegments(force: Bool = false, category: SegmentCategory, result: @escaping TypeBlock<[SegmentDTO]>) {
+        executeSafelyWithDependencies { [weak self] _ in
+            self?.manualSegmentationManager?.getSegments(category: category, force: force, result: result)
         }
     }
 }
